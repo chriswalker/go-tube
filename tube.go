@@ -27,11 +27,14 @@ type TubeStatusResult struct {
 	LineStatuses []*Status
 }
 
+// Status represents all status details for a single line on the underground
 type Status struct {
 	Description string `json:"statusSeverityDescription"`
 }
 
-// GetStatus returns a list of issues with the supplied transport modes
+// GetStatus returns a list of issues with the supplied transport modes.
+// If the user has not specified any modes of transport on the command line,
+// all possible valid modes will be used.
 func GetStatus(modes []string) (*[]TubeStatusResult, error) {
 	if len(modes) == 0 {
 		// Provide default, of currently valid modes
