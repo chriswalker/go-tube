@@ -11,7 +11,7 @@ import (
 const statusURL = "https://api.tfl.gov.uk/line/mode/"
 
 // Express valid modes of transport as a map, instead of a plain slice;
-// this seems a little odd at first glance, but checking presnce of user
+// this seems a little odd at first glance, but checking presence of user
 // supplied modes against the map is much simpler than doing the same with
 // a slice
 var ValidModes = map[string]struct{}{
@@ -37,18 +37,16 @@ type Status struct {
 // all possible valid modes will be used.
 func GetStatus(modes []string) (*[]TubeStatusResult, error) {
 	if len(modes) == 0 {
-		// Provide default, of currently valid modes
 		for key := range ValidModes {
 			modes = append(modes, key)
 		}
 	}
-	// TODO - better way of doing this
+
 	q := "?app_id=" + config.AppId + "&app_key=" + config.ApiKey
 	resp, err := http.Get(statusURL + strings.Join(modes, ",") + "/status" + q)
 	if err != nil {
 		return nil, err
 	}
-
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
