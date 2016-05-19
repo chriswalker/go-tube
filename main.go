@@ -5,17 +5,15 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 	"text/template"
 )
 
 // Text template for outputting status updates
-const templ = `Tube issues:
-{{range .}}{{.Name}}: {{.LineStatuses | getDescription}}
-{{end}}
-`
+const templ = `Tube status:
+{{range .}}{{printf "%-20s" .Name}}{{.LineStatuses | getDescription}}
+{{end}}`
 
 var (
 	// The issues report
@@ -67,7 +65,7 @@ func getDescription(lineStatuses []*Status) string {
 func init() {
 	f, err := ioutil.ReadFile("./config.json")
 	if err != nil {
-		fmt.Printf("Unable to read config.json\n", err)
+		fmt.Fprintf(os.Stderr, "Unable to read config.json: %v\n", err)
 		os.Exit(1)
 	}
 	json.Unmarshal(f, &config)
@@ -81,17 +79,18 @@ func main() {
 	// Validate any modes supplied on the command line
 	for _, mode := range modes.modes {
 		if _, ok := ValidModes[mode]; ok != true {
-			fmt.Printf("Invalid transport mode specified (%s)\n", mode)
+			fmt.Fprintf(os.Stderr, "Invalid transport mode specified (%s)\n", mode)
 			os.Exit(1)
 		}
 	}
 
 	result, err := GetStatus(modes.modes)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to retrieve URL; %v\n", err)
+		fmt.Fprintf(os.Stderr, "Unable to retrieve URL: %v\n", err)
+		os.Exit(1)
 	}
 
 	if err := report.Execute(os.Stdout, result); err != nil {
-		log.Fatal(err)
+		fmt.Fprintln(os.Stderr, err)
 	}
 }
